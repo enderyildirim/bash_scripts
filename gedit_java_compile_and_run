@@ -1,0 +1,38 @@
+#!/bin/sh
+
+FILE_ROOT_PATH=$GEDIT_CURRENT_DOCUMENT_PATH
+FILE_NAME=$GEDIT_CURRENT_DOCUMENT_NAME                      # file name 
+PROJECT_DIR=${GEDIT_CURRENT_DOCUMENT_PATH%/src/*}           # project directory, src directory must be located under this 
+BIN_PATH=$PROJECT_DIR/bin                                   # binary files directory(.class files)
+SRC_PATH=$PROJECT_DIR/src                                   # source files directory(.java files)
+PACKAGE_PATH=${GEDIT_CURRENT_DOCUMENT_PATH#*/src/}          # Path to the file under src file, e.g com/example/Test.java
+QUALIFIED_CLASS_NAME=${PACKAGE_PATH//\//\.}
+QUALIFIED_CLASS_NAME=${QUALIFIED_CLASS_NAME%*\.java}
+
+printf "################################ PROJECT INFO ###################################\n"
+printf "File name                : %s\n" "$FILE_NAME"
+printf "File root path           : %s\n" "$FILE_ROOT_PATH"
+printf "Qualified class name     : %s\n" "$QUALIFIED_CLASS_NAME"
+printf "Package path             : %s\n" "$PACKAGE_PATH"
+printf "Binary files directory   : %s\n" "$BIN_PATH"
+printf "Source files directory   : %s\n" "$SRC_PATH"
+printf "##################################################################################\n"
+
+if ! [ -d  $BIN_PATH ] 
+then
+    mkdir $BIN_PATH 
+fi
+
+if [ $JAVA_HOME == "" ]
+then
+    echo "You need to install JDK."
+else
+    javac -classpath $SRC_PATH -d $BIN_PATH $FILE_ROOT_PATH
+fi
+
+if [ $? -eq 0 ]
+then
+    printf "\n\n"
+    java -classpath $BIN_PATH $QUALIFIED_CLASS_NAME
+fi
+
